@@ -1,24 +1,24 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from 'react';
+import styles from './App.module.css';
+import { TemplateEditor } from './components/TemplateEditor';
+import { IVariable } from './components/Variables';
 
 function App() {
+  const [start, setStart] = useState(false)
+
+  const variables: IVariable[] =
+    [{ name: 'firstName' },
+    { name: 'lastName' },
+    { name: 'company' },
+    { name: 'position' }]
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className={styles.app} >
+      {start ?
+        <TemplateEditor arrVarNames={variables} callbackSave={() => console.log('save')} />
+        :
+        <button className={`${styles.btn} ${styles.large_btn}`} onClick={() => setStart(prev => prev = true)}>Message Editor</button>
+      }
     </div>
   );
 }

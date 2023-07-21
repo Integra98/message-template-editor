@@ -1,0 +1,21 @@
+textarea:focus {
+    outline: none;
+    border: 1px solid #D0C9D6;
+}
+
+.textarea {
+    margin: 10px 0px;
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid #D0C9D6;
+    border-radius: 6px;
+    font-size: 14px;
+    line-height: 16px;
+    height: 20px;
+    resize: none;
+}
+
+.condition_textarea {
+    width: 80%;
+    margin: 5px;
+}
