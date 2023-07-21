@@ -32,7 +32,6 @@ export function TemplateTextArea({conditionAdded}: TemplateTextAreaProps) {
     }
 
 
-
     return (
         <>
             <CustomTextArea template={textTemplate} giveId={(res) => setTextAreaId(res)}/>

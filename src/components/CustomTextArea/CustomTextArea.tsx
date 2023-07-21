@@ -25,6 +25,12 @@ export function CustomTextArea({template, giveId}: CustomTextAreaProps) {
     useEffect(() => {
         giveId(textAreaId)
     });
+
+    useEffect(() => {
+        if(template){
+            setTextAreaValue(template)
+        }
+    }, [template]);
     
     return (
         <>
