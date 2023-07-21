@@ -3,13 +3,20 @@ import styles from '../App.module.css';
 import useAutosizeTextArea from './CustomTextArea/AutosizeTextArea';
 import { CustomTextArea } from './CustomTextArea/CustomTextArea';
 import { TemplateTextArea } from './TemplateTextArea';
+import { IVariable } from './Variables';
 
 interface ConditionsProps {
-    conditionAdded: HTMLTextAreaElement | undefined;
+    focusedArea: HTMLTextAreaElement | undefined;
+    conditionsCount: number;
+    selectedVar: IVariable | undefined;
     deleteCondition: () => void
 }
 
-export function Conditions({ conditionAdded, deleteCondition }: ConditionsProps) {
+export function Conditions({ focusedArea, conditionsCount, selectedVar, deleteCondition }: ConditionsProps) {
+
+    useEffect(() => {
+        console.log('!!! Conditions selectedVar', selectedVar);
+    }, [selectedVar])
 
     return (
         <div className={styles.conditions}>
@@ -20,7 +27,7 @@ export function Conditions({ conditionAdded, deleteCondition }: ConditionsProps)
                     <button className={styles.delete_btn} onClick={() => deleteCondition()}>Delete</button>
                 </div>
                 <div className={styles.condition_textarea}>
-                    <TemplateTextArea conditionAdded={conditionAdded} />
+                    <TemplateTextArea focusedArea={focusedArea} conditionsCount ={conditionsCount} selectedVar={selectedVar}/>
                 </div>
             </div>
             <div className={styles.condition}>
@@ -29,7 +36,7 @@ export function Conditions({ conditionAdded, deleteCondition }: ConditionsProps)
                 </div>
 
                 <div className={styles.condition_textarea}>
-                    <TemplateTextArea conditionAdded={conditionAdded} />
+                    <TemplateTextArea focusedArea={focusedArea} conditionsCount ={conditionsCount} selectedVar={selectedVar}/>
                 </div>
             </div>
             <div className={styles.condition}>
@@ -38,7 +45,7 @@ export function Conditions({ conditionAdded, deleteCondition }: ConditionsProps)
                 </div>
 
                 <div className={styles.condition_textarea}>
-                    <TemplateTextArea conditionAdded={conditionAdded} />
+                    <TemplateTextArea focusedArea={focusedArea} conditionsCount ={conditionsCount} selectedVar={selectedVar}/>
                 </div>
             </div>
 

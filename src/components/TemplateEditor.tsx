@@ -26,39 +26,33 @@ export function TemplateEditor({ arrVarNames, template, callbackSave }: Template
     }
 
     const [elWithCondition, setElWithCondition] = useState<HTMLTextAreaElement>()
+    const [conditionsCount, setConditionsCount] = useState(0);
 
     function createCondition() {
         if (focusElement) {
-            // If elWithCondition did not change
-            if (elWithCondition == focusElement) {
-                const emptyArea = document.createElement("textarea");
-                emptyArea.id = '0'
-                setElWithCondition(emptyArea)
-            } else {
-                setElWithCondition(focusElement)
-            }
-
+            setConditionsCount(prev => prev+1)
+            setElWithCondition(focusElement)
         }
     }
 
-    // If elWithCondition is emptyArea we need to set focusElement
-    useEffect(() => {
-        if(elWithCondition?.id == '0'){
-            setElWithCondition(focusElement)
-        }
-      }, [elWithCondition]);
+      const [selectedVar, setSelectedVar] = useState<IVariable>()
+
+      function insertVal(variable: IVariable){
+        setSelectedVar(variable)
+        setElWithCondition(focusElement)
+      }
 
     return (
         <div className={`${styles.widget} ${styles.template_editor}`} onClick={handleFocusChange}>
             <h1 className={styles.h1}>Message Template Editor</h1>
             <div className={styles.editor_variables}>
-                <Variables variables={arrVarNames} selected={() => console.log('selected')} />
+                <Variables variables={arrVarNames} selected={(v) => insertVal(v)} />
             </div>
             <button className={`${styles.btn} ${styles.add_btn}`} onClick={() => createCondition()}>
                 {`Click to add: IF-THEN-ELSE`}
             </button>
 
-            <TemplateTextArea conditionAdded={elWithCondition} />
+            <TemplateTextArea focusedArea={elWithCondition} conditionsCount={conditionsCount} selectedVar={selectedVar}/>
 
             <div className={styles.widget_footer}>
                 <button className={styles.btn}> Preview</button>
