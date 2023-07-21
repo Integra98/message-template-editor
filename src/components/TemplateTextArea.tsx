@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import styles from '../App.module.css';
 import { CustomTextArea } from './CustomTextArea/CustomTextArea';
 import { Conditions } from './Conditions';
@@ -15,8 +15,7 @@ export function TemplateTextArea({conditionAdded}: TemplateTextAreaProps) {
     const [secondTextAreaId, setSecondTextAreaId] = useState('')
 
     useEffect(() => {
-        if(conditionAdded && conditionAdded.id == textAreaId){
-            console.log('!conditionAdded Chose me!', textAreaId)
+        if(conditionAdded && conditionAdded.id === textAreaId){
             createCondition()
         }
     }, [conditionAdded])
@@ -31,6 +30,14 @@ export function TemplateTextArea({conditionAdded}: TemplateTextAreaProps) {
         setSecondArea(true)
     }
 
+    function deleteCondition(){
+        const firstEl = document.getElementById(textAreaId)
+        const secondEl = document.getElementById(secondTextAreaId)
+        const textAreaValue = (firstEl?.textContent ? firstEl?.textContent : '') + (secondEl?.textContent ? secondEl?.textContent : '')
+        setTextTemplate(textAreaValue)
+        setSecondArea(false)
+    }
+
 
     return (
         <>
@@ -38,7 +45,7 @@ export function TemplateTextArea({conditionAdded}: TemplateTextAreaProps) {
 
             {secondArea &&
                 <>
-                    <Conditions conditionAdded={conditionAdded}/>
+                    <Conditions conditionAdded={conditionAdded} deleteCondition={() => deleteCondition()}/>
                     <CustomTextArea template={secondTextTemplate} giveId={(res) => setSecondTextAreaId(res)}/>
                 </>
             }</>

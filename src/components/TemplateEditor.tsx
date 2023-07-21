@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import styles from '../App.module.css';
 import { IVariable, Variables } from './Variables';
 import useAutosizeTextArea from './CustomTextArea/AutosizeTextArea';
@@ -19,21 +19,34 @@ export function TemplateEditor({ arrVarNames, template, callbackSave }: Template
 
     const handleFocusChange = (event: React.SyntheticEvent) => {
         let target = event.target as HTMLElement;
-        if(target.tagName == 'TEXTAREA'){
-          setFocusElement(target as HTMLTextAreaElement)
-          console.log(target.id);
+        if (target.tagName == 'TEXTAREA') {
+            setFocusElement(target as HTMLTextAreaElement)
         }
 
-      }
+    }
 
     const [elWithCondition, setElWithCondition] = useState<HTMLTextAreaElement>()
 
     function createCondition() {
-        if(focusElement){
-            console.log('elWithCondition', focusElement);
-            setElWithCondition(focusElement)
+        if (focusElement) {
+            // If elWithCondition did not change
+            if (elWithCondition == focusElement) {
+                const emptyArea = document.createElement("textarea");
+                emptyArea.id = '0'
+                setElWithCondition(emptyArea)
+            } else {
+                setElWithCondition(focusElement)
+            }
+
         }
     }
+
+    // If elWithCondition is emptyArea we need to set focusElement
+    useEffect(() => {
+        if(elWithCondition?.id == '0'){
+            setElWithCondition(focusElement)
+        }
+      }, [elWithCondition]);
 
     return (
         <div className={`${styles.widget} ${styles.template_editor}`} onClick={handleFocusChange}>
@@ -45,7 +58,7 @@ export function TemplateEditor({ arrVarNames, template, callbackSave }: Template
                 {`Click to add: IF-THEN-ELSE`}
             </button>
 
-            <TemplateTextArea conditionAdded={elWithCondition}/>
+            <TemplateTextArea conditionAdded={elWithCondition} />
 
             <div className={styles.widget_footer}>
                 <button className={styles.btn}> Preview</button>

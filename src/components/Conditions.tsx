@@ -6,9 +6,10 @@ import { TemplateTextArea } from './TemplateTextArea';
 
 interface ConditionsProps {
     conditionAdded: HTMLTextAreaElement | undefined;
+    deleteCondition: () => void
 }
 
-export function Conditions({ conditionAdded }: ConditionsProps) {
+export function Conditions({ conditionAdded, deleteCondition }: ConditionsProps) {
 
     return (
         <div className={styles.conditions}>
@@ -16,7 +17,7 @@ export function Conditions({ conditionAdded }: ConditionsProps) {
             <div className={styles.condition}>
                 <div className={styles.condition_title}>
                     <span className={styles.condition_text}>IF</span>
-                    <button className={styles.delete_btn}>Delete</button>
+                    <button className={styles.delete_btn} onClick={() => deleteCondition()}>Delete</button>
                 </div>
                 <div className={styles.condition_textarea}>
                     <TemplateTextArea conditionAdded={conditionAdded} />
