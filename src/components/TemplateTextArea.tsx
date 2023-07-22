@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import styles from '../App.module.css';
 import { CustomTextArea } from './CustomTextArea/CustomTextArea';
 import { Conditions } from './Conditions';
-import { IVariable } from './Variables';
+import { IVariable } from '../models';
 
 interface TemplateTextAreaProps{
     focusedArea: HTMLTextAreaElement | undefined;

@@ -3,7 +3,8 @@ import styles from '../App.module.css';
 import useAutosizeTextArea from './CustomTextArea/AutosizeTextArea';
 import { CustomTextArea } from './CustomTextArea/CustomTextArea';
 import { TemplateTextArea } from './TemplateTextArea';
-import { IVariable } from './Variables';
+import { IVariable } from '../models';
+
 
 interface ConditionsProps {
     focusedArea: HTMLTextAreaElement | undefined;

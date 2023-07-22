@@ -1,23 +1,17 @@
 import React, { useState } from 'react';
 import styles from './App.module.css';
 import { TemplateEditor } from './components/TemplateEditor';
-import { IVariable } from './components/Variables';
+import { variables } from './models';
 
 function App() {
-  const [start, setStart] = useState(false)
-
-  const variables: IVariable[] =
-    [{ name: 'firstName' },
-    { name: 'lastName' },
-    { name: 'company' },
-    { name: 'position' }]
+  const [showEditor, setShowEditor] = useState(false)
 
   return (
     <div className={styles.app} >
-      {start ?
-        <TemplateEditor arrVarNames={variables} callbackSave={() => console.log('save')} />
+      {showEditor ?
+        <TemplateEditor arrVarNames={variables} callbackSave={() => console.log('save')} close={() => setShowEditor(false)} />
         :
-        <button className={`${styles.btn} ${styles.large_btn}`} onClick={() => setStart(prev => prev = true)}>Message Editor</button>
+        <button className={`${styles.btn} ${styles.large_btn}`} onClick={() => setShowEditor(true)}>Message Editor</button>
       }
     </div>
   );

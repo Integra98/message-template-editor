@@ -1,13 +1,10 @@
 import React, { useRef, useState } from 'react';
 import styles from '../App.module.css';
+import { IVariable } from '../models';
 
 interface VariablesProps{
     variables: IVariable[];
     selected: (variable: IVariable) => void
-}
-
-export interface IVariable{
-    name: string;
 }
 
 export function Variables({variables, selected}: VariablesProps){
