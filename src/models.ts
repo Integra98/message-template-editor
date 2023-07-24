@@ -8,3 +8,20 @@ export const variables: IVariable[] = [
   { name: "company" },
   { name: "position" },
 ];
+
+export interface ITextAreaTemplate {
+  textAreaId: string;
+  content: string;
+  isSecondArea: boolean;
+  firstAreaId: string | null;
+  secondAreaId: string | null;
+  conditionType: ConditionType | null;
+  conditionVar: string | null;
+  parentConditionId: string | null | undefined;
+}
+
+export enum ConditionType {
+  if= 'IF',
+  then='THEN',
+  else='ELSE'
+}

@@ -46,7 +46,7 @@
   padding: 20px;
   margin: 50px;
   left: 50%;
-  transform: translateX(-50%);
+  /* transform: translateX(-50%); */
 }
 
 .widget_footer {
@@ -69,6 +69,7 @@ textarea:focus {
 
 .template_editor {
   position: absolute;
+  animation: show 300ms ease-in forwards;
 
   .editor_variables {
     display: flex;
@@ -186,6 +187,7 @@ textarea:focus {
   .preview {
     background-color: white;
     position: absolute;
+    animation: show 300ms ease-in forwards;
 
     .message_template {
       width: auto;
@@ -241,4 +243,17 @@ textarea:focus {
 input:focus {
   outline: none;
   border: 1px solid #D0C9D6;
+}
+
+@keyframes show{
+  0%{
+    opacity: 0;
+    transform: translateY(-100%) translateX(-50%);;
+  }
+
+
+  100%{
+    opacity: 1;
+    transform: translateY(0%) translateX(-50%);;
+  }
 }

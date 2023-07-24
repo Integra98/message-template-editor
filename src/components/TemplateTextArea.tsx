@@ -1,24 +1,68 @@
-import React, { useEffect, useRef, useState } from 'react';
-import styles from '../App.module.css';
+import React, { RefObject, useContext, useEffect, useState } from 'react';
 import { CustomTextArea } from './CustomTextArea/CustomTextArea';
 import { Conditions } from './Conditions';
-import { IVariable } from '../models';
+import { ConditionType, ITextAreaTemplate, IVariable } from '../models';
+import { TemplateContext } from '../TemplateContext';
 
-interface TemplateTextAreaProps{
+interface TemplateTextAreaProps {
     focusedArea: HTMLTextAreaElement | undefined;
     conditionsCount: number;
     selectedVar: IVariable | undefined;
+    conditionType: ConditionType | null;
+    parentConditionId?: string | null | undefined;
+    giveAreaId?: (id: string) => void
 }
 
-export function TemplateTextArea({focusedArea, conditionsCount, selectedVar}: TemplateTextAreaProps) {
+export function TemplateTextArea({ focusedArea, conditionsCount, selectedVar, conditionType, parentConditionId, giveAreaId }: TemplateTextAreaProps) {
     const [secondArea, setSecondArea] = useState(false)
     const [textTemplate, setTextTemplate] = useState('')
     const [secondTextTemplate, setSecondTextTemplate] = useState('')
-    const [textAreaId, setTextAreaId] = useState('')
-    const [secondTextAreaId, setSecondTextAreaId] = useState('')
+    const [textAreaId, setTextAreaId] = useState<string | null>(null)
+    const [secondTextAreaId, setSecondTextAreaId] = useState<string | null>(null)
+    let textAreaRef: RefObject<HTMLTextAreaElement> | null = null;
+    let secondTextAreaRef: RefObject<HTMLTextAreaElement> | null = null;
+
+    const { varSelected, areaAdded, parentAreaChanged } = useContext(TemplateContext)
+
+    // set parentConditionId for TextArea(THEN,ELSE)
+    useEffect(() => {
+        if(parentConditionId && textAreaId){
+            parentAreaChanged(textAreaId, parentConditionId)
+        }
+    }, [parentConditionId])
+
+
+    function setAreaId(areaRef: RefObject<HTMLTextAreaElement>, isSecond: boolean) {
+
+        if (areaRef.current) {
+            if (!isSecond) {
+                textAreaRef = areaRef
+                setTextAreaId(areaRef.current?.id)
+                if (giveAreaId) {
+                    giveAreaId(areaRef.current?.id)
+                }
+            } else {
+                secondTextAreaRef = areaRef;
+                setSecondTextAreaId(areaRef.current?.id)
+            }
+        }
+
+        const newArea: ITextAreaTemplate = {
+            textAreaId: areaRef.current?.id ? areaRef.current?.id : '',
+            content: areaRef.current?.value ? areaRef.current?.value : '',
+            isSecondArea: isSecond,
+            firstAreaId: isSecond ? textAreaId : null,
+            secondAreaId: isSecond ? null : secondTextAreaId,
+            conditionType: conditionType,
+            conditionVar: null,
+            parentConditionId: parentConditionId
+        }
+        areaAdded(newArea)
+    }
+
 
     useEffect(() => {
-        if(focusedArea && focusedArea.id === textAreaId){
+        if (focusedArea && focusedArea.id === textAreaId) {
             createCondition()
         }
     }, [conditionsCount])
@@ -33,55 +77,55 @@ export function TemplateTextArea({focusedArea, conditionsCount, selectedVar}: Te
         setSecondArea(true)
     }
 
-    function deleteCondition(){
-        const firstEl = document.getElementById(textAreaId)
-        const secondEl = document.getElementById(secondTextAreaId)
+    function deleteCondition() {
+        const firstEl = textAreaId ? document.getElementById(textAreaId) : null
+        const secondEl = secondTextAreaId ? document.getElementById(secondTextAreaId) : null
         const textAreaValue = (firstEl?.textContent ? firstEl?.textContent : '') + (secondEl?.textContent ? secondEl?.textContent : '')
         setTextTemplate(textAreaValue)
         setSecondArea(false)
     }
 
+
     useEffect(() => {
-        if(focusedArea && selectedVar){
+        if (focusedArea && selectedVar) {
             addVariableIntoTextArea(selectedVar)
         }
     }, [selectedVar])
 
     // Add variable into textArea
     function addVariableIntoTextArea(selectedVar: IVariable) {
-        console.log('addVariableIntoTextArea focusedArea', focusedArea);
         const selectionStart = focusedArea?.selectionStart
         const selectionEnd = focusedArea?.selectionEnd
         const textAreaValue = focusedArea?.value
         let newValue = ''
 
         if (selectionStart && selectionEnd) {
-            newValue = textAreaValue?.substring(0, selectionStart) + ' {' + selectedVar.name + '} ' + textAreaValue?.substring(Number(selectionEnd), textAreaValue?.length)
+            newValue = textAreaValue?.substring(0, selectionStart) + ' {' + selectedVar.name + '} '
+                + textAreaValue?.substring(Number(selectionEnd), textAreaValue?.length)
         } else {
-            newValue = ' {' + selectedVar.name + '} '
+            newValue = ' {' + selectedVar.name + '} ';
         }
 
-        console.log('newValue', newValue);
-        switch(focusedArea?.id){
-            case textAreaId: 
+        if (focusedArea?.id === textAreaId) {
+            varSelected(textAreaId, selectedVar.name)
             setTextTemplate(newValue)
-            break;
-            case secondTextAreaId: 
-            setSecondTextTemplate(newValue)
-            break;
+
         }
 
+        if (focusedArea?.id === secondTextAreaId) {
+            varSelected(secondTextAreaId, selectedVar.name)
+            setSecondTextTemplate(newValue)
+        }
     }
-
 
     return (
         <>
-            <CustomTextArea template={textTemplate} giveId={(res) => setTextAreaId(res)}/>
+            <CustomTextArea template={textTemplate} giveRef={(ref) => setAreaId(ref, false)} />
 
             {secondArea &&
                 <>
-                    <Conditions focusedArea={focusedArea} conditionsCount={conditionsCount} selectedVar={selectedVar} deleteCondition={() => deleteCondition()}/>
-                    <CustomTextArea template={secondTextTemplate} giveId={(res) => setSecondTextAreaId(res)}/>
+                    <Conditions focusedArea={focusedArea} conditionsCount={conditionsCount} selectedVar={selectedVar} deleteCondition={() => deleteCondition()} />
+                    <CustomTextArea template={secondTextTemplate} giveRef={(ref) => setAreaId(ref, true)} />
                 </>
             }</>
     )

@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import styles from './App.module.css';
 import { TemplateEditor } from './components/TemplateEditor';
 import { variables } from './models';
+import { TemplateProvider } from './TemplateContext';
 
 function App() {
   const [showEditor, setShowEditor] = useState(false)
 
   return (
+    <TemplateProvider>
     <div className={styles.app} >
       {showEditor ?
         <TemplateEditor arrVarNames={variables} callbackSave={() => console.log('save')} close={() => setShowEditor(false)} />
@@ -14,7 +16,9 @@ function App() {
         <button className={`${styles.btn} ${styles.large_btn}`} onClick={() => setShowEditor(true)}>Message Editor</button>
       }
     </div>
-  );
+    </TemplateProvider>
+      
+  )
 }
 
 export default App;

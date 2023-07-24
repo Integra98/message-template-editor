@@ -1,37 +1,66 @@
-import React, { useEffect, useId, useRef, useState } from 'react';
+import React, { RefObject, useContext, useEffect, useId, useRef, useState } from 'react';
 import useAutosizeTextArea from './AutosizeTextArea';
 import './CustomTextArea.css'
+import { variables } from '../../models';
+import { TemplateContext } from '../../TemplateContext';
 
-interface CustomTextAreaProps{
+interface CustomTextAreaProps {
     template?: string;
-    giveId: (id: string) => void;
+    giveRef: (ref: RefObject<HTMLTextAreaElement>) => void;
 }
 
-export function CustomTextArea({template, giveId}: CustomTextAreaProps) {
+export function CustomTextArea({ template, giveRef }: CustomTextAreaProps) {
     // Autosize TextArea
     const [textAreaValue, setTextAreaValue] = useState('');
     const textAreaRef = useRef<HTMLTextAreaElement>(null);
     const textAreaId = useId();
+    const { areaChanged } = useContext(TemplateContext)
 
     useAutosizeTextArea(textAreaRef.current, textAreaValue);
 
-    const handleChange = (evt: React.ChangeEvent<HTMLTextAreaElement>) => {
-        const val = evt.target?.value;
-        setTextAreaValue(val);
 
+    const handleChange = (evt: React.ChangeEvent<HTMLTextAreaElement>) => {
+        let val = evt.target?.value;
+        if (textAreaValue.length > evt.target?.value.length) {
+            val = removeWholeVariable(val)
+        }
+        setTextAreaValue(val);
+        areaChanged(evt.target)
     };
 
-    // give Id to Parent
+    function removeWholeVariable(value: string): string {
+        const textAreaWords = value.split(' ');
+        let lastWord = textAreaWords[textAreaWords.length - 1].replace('{', '')
+        const isVar = variables.find(v => v.name === lastWord)
+        if (isVar) {
+            const valueWords = value.split(' ');
+            value = value.replace(valueWords[valueWords.length - 1], '')
+        }
+        return value;
+    }
+
+    // give TextArea Ref to Parent
+    const firstRenderRef = useRef(true);
     useEffect(() => {
-        giveId(textAreaId)
+        const firstRender = firstRenderRef.current;
+
+        if (firstRender) {
+            firstRenderRef.current = false;
+            giveRef(textAreaRef)
+
+        }
     });
 
     useEffect(() => {
-        if(template){
+        if (template) {
             setTextAreaValue(template)
+            if (textAreaRef.current) {
+                textAreaRef.current.value = template
+                areaChanged(textAreaRef.current)
+            }
         }
     }, [template]);
-    
+
     return (
         <>
             <textarea
@@ -42,7 +71,7 @@ export function CustomTextArea({template, giveId}: CustomTextAreaProps) {
                 rows={1}
                 value={textAreaValue}
             />
-            
+
         </>
     )
 }

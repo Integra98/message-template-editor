@@ -1,13 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import styles from '../App.module.css';
-import useAutosizeTextArea from './CustomTextArea/AutosizeTextArea';
-import { Conditions } from './Conditions';
-import { CustomTextArea } from './CustomTextArea/CustomTextArea';
 import { TemplateTextArea } from './TemplateTextArea';
 import { Preview } from './Preview';
 import { IVariable } from '../models';
 import { Variables } from './Variables';
-
+import { TemplateContext } from '../TemplateContext';
 
 interface TemplateEditorProps {
     arrVarNames: IVariable[];
@@ -17,7 +14,8 @@ interface TemplateEditorProps {
 }
 
 export function TemplateEditor({ arrVarNames, template, callbackSave, close }: TemplateEditorProps) {
-
+    
+    const { selectedVars, textAreaTemp, varSelected, areaAdded } = useContext(TemplateContext)
     const [focusElement, setFocusElement] = useState<HTMLTextAreaElement>()
 
     const handleFocusChange = (event: React.SyntheticEvent) => {
@@ -58,7 +56,8 @@ export function TemplateEditor({ arrVarNames, template, callbackSave, close }: T
                     {`Click to add: IF-THEN-ELSE`}
                 </button>
 
-                <TemplateTextArea focusedArea={elWithCondition} conditionsCount={conditionsCount} selectedVar={selectedVar} />
+                <TemplateTextArea focusedArea={elWithCondition} conditionsCount={conditionsCount} selectedVar={selectedVar}
+                conditionType={null} />
 
                 <div className={styles.widget_footer}>
                     <button className={styles.btn} onClick={() => setShowPreview(true)}> Preview</button>
@@ -67,7 +66,7 @@ export function TemplateEditor({ arrVarNames, template, callbackSave, close }: T
                 </div>
             </div>
 
-            {showPreview && <Preview arrVarNames={[]} template={''} close={() => setShowPreview(false)}/>}
+            {showPreview && <Preview arrVarNames={selectedVars} template={textAreaTemp} close={() => setShowPreview(false)}/>}
         </div>
     )
 }
