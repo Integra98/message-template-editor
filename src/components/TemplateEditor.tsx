@@ -25,7 +25,8 @@ export function TemplateEditor({ arrVarNames, template, callbackSave, close }: T
       
 
     function setScreenSize() {
-        const height = document.documentElement.scrollHeight
+        const editor = document.getElementById('editor')
+        const height = editor?.scrollHeight ? editor?.scrollHeight + 318 : editor?.scrollHeight
         const widgets = document.getElementById('widgets')
         if (widgets) {
             widgets.setAttribute('style', `height:${height}px;`)
