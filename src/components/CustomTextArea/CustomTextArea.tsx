@@ -1,7 +1,7 @@
 import React, { RefObject, useContext, useEffect, useId, useRef, useState } from 'react';
 import useAutosizeTextArea from './AutosizeTextArea';
 import './CustomTextArea.css'
-import { variables } from '../../models';
+import { IVariable, variables } from '../../models';
 import { TemplateContext } from '../../TemplateContext';
 
 interface CustomTextAreaProps {
@@ -14,7 +14,7 @@ export function CustomTextArea({ template, giveRef }: CustomTextAreaProps) {
     const [textAreaValue, setTextAreaValue] = useState('');
     const textAreaRef = useRef<HTMLTextAreaElement>(null);
     const textAreaId = useId();
-    const { areaChanged } = useContext(TemplateContext)
+    const { insertedVariable, areaChanged } = useContext(TemplateContext)
 
     useAutosizeTextArea(textAreaRef.current, textAreaValue);
 
@@ -60,6 +60,35 @@ export function CustomTextArea({ template, giveRef }: CustomTextAreaProps) {
             }
         }
     }, [template]);
+
+
+    useEffect(() => {
+        if (insertedVariable?.textArea) {
+            if(insertedVariable.textArea.id === textAreaId && insertedVariable.variable){
+                addVariableIntoTextArea(insertedVariable.textArea, insertedVariable.variable)
+
+            }
+        }
+    }, [insertedVariable]);
+
+
+    // Add variable into textArea
+    function addVariableIntoTextArea(focusedArea: HTMLTextAreaElement, selectedVar: IVariable) {
+        const selectionStart = focusedArea?.selectionStart
+        const selectionEnd = focusedArea?.selectionEnd
+        const currentTextAreaValue = focusedArea?.value
+        let newValue = ''
+
+        if (selectionStart && selectionEnd) {
+            newValue = currentTextAreaValue?.substring(0, selectionStart) + ' {' + selectedVar.name + '} '
+                + currentTextAreaValue?.substring(Number(selectionEnd), currentTextAreaValue?.length)
+        } else {
+            newValue = ' {' + selectedVar.name + '} ';
+        }
+
+        setTextAreaValue(newValue)
+
+    }
 
     return (
         <>

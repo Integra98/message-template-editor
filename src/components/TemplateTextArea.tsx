@@ -7,13 +7,13 @@ import { TemplateContext } from '../TemplateContext';
 interface TemplateTextAreaProps {
     focusedArea: HTMLTextAreaElement | undefined;
     conditionsCount: number;
-    selectedVar: IVariable | undefined;
     conditionType: ConditionType | null;
+    parentAreaId: string | null | undefined;
     parentConditionId?: string | null | undefined;
     giveAreaId?: (id: string) => void
 }
 
-export function TemplateTextArea({ focusedArea, conditionsCount, selectedVar, conditionType, parentConditionId, giveAreaId }: TemplateTextAreaProps) {
+export function TemplateTextArea({ focusedArea, conditionsCount, conditionType, parentAreaId, parentConditionId, giveAreaId }: TemplateTextAreaProps) {
     const [secondArea, setSecondArea] = useState(false)
     const [textTemplate, setTextTemplate] = useState('')
     const [secondTextTemplate, setSecondTextTemplate] = useState('')
@@ -22,14 +22,18 @@ export function TemplateTextArea({ focusedArea, conditionsCount, selectedVar, co
     let textAreaRef: RefObject<HTMLTextAreaElement> | null = null;
     let secondTextAreaRef: RefObject<HTMLTextAreaElement> | null = null;
 
-    const { varSelected, areaAdded, parentAreaChanged } = useContext(TemplateContext)
+    const {areaAdded, parentAreaChanged } = useContext(TemplateContext)
 
     // set parentConditionId for TextArea(THEN,ELSE)
     useEffect(() => {
-        if(parentConditionId && textAreaId){
-            parentAreaChanged(textAreaId, parentConditionId)
+        if (parentConditionId && textAreaId) {
+            parentAreaChanged(textAreaId, parentConditionId, true)
         }
-    }, [parentConditionId])
+
+        if (parentAreaId && textAreaId) {
+            parentAreaChanged(textAreaId, parentAreaId, false)
+        }
+    }, [parentConditionId, parentAreaId])
 
 
     function setAreaId(areaRef: RefObject<HTMLTextAreaElement>, isSecond: boolean) {
@@ -55,6 +59,7 @@ export function TemplateTextArea({ focusedArea, conditionsCount, selectedVar, co
             secondAreaId: isSecond ? null : secondTextAreaId,
             conditionType: conditionType,
             conditionVar: null,
+            parentAreaId: parentAreaId,
             parentConditionId: parentConditionId
         }
         areaAdded(newArea)
@@ -86,45 +91,14 @@ export function TemplateTextArea({ focusedArea, conditionsCount, selectedVar, co
     }
 
 
-    useEffect(() => {
-        if (focusedArea && selectedVar) {
-            addVariableIntoTextArea(selectedVar)
-        }
-    }, [selectedVar])
-
-    // Add variable into textArea
-    function addVariableIntoTextArea(selectedVar: IVariable) {
-        const selectionStart = focusedArea?.selectionStart
-        const selectionEnd = focusedArea?.selectionEnd
-        const textAreaValue = focusedArea?.value
-        let newValue = ''
-
-        if (selectionStart && selectionEnd) {
-            newValue = textAreaValue?.substring(0, selectionStart) + ' {' + selectedVar.name + '} '
-                + textAreaValue?.substring(Number(selectionEnd), textAreaValue?.length)
-        } else {
-            newValue = ' {' + selectedVar.name + '} ';
-        }
-
-        if (focusedArea?.id === textAreaId) {
-            varSelected(textAreaId, selectedVar.name)
-            setTextTemplate(newValue)
-
-        }
-
-        if (focusedArea?.id === secondTextAreaId) {
-            varSelected(secondTextAreaId, selectedVar.name)
-            setSecondTextTemplate(newValue)
-        }
-    }
-
     return (
         <>
             <CustomTextArea template={textTemplate} giveRef={(ref) => setAreaId(ref, false)} />
 
             {secondArea &&
                 <>
-                    <Conditions focusedArea={focusedArea} conditionsCount={conditionsCount} selectedVar={selectedVar} deleteCondition={() => deleteCondition()} />
+                    <Conditions focusedArea={focusedArea} conditionsCount={conditionsCount}
+                        parentAreaId={textAreaId} deleteCondition={() => deleteCondition()} />
                     <CustomTextArea template={secondTextTemplate} giveRef={(ref) => setAreaId(ref, true)} />
                 </>
             }</>

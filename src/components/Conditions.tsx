@@ -1,17 +1,17 @@
-import React, { useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import styles from '../App.module.css';
 import { TemplateTextArea } from './TemplateTextArea';
-import { ConditionType, IVariable } from '../models';
+import { ConditionType} from '../models';
 
 
 interface ConditionsProps {
     focusedArea: HTMLTextAreaElement | undefined;
     conditionsCount: number;
-    selectedVar: IVariable | undefined;
+    parentAreaId: string | null;
     deleteCondition: () => void
 }
 
-export function Conditions({ focusedArea, conditionsCount, selectedVar, deleteCondition }: ConditionsProps) {
+export function Conditions({ focusedArea, conditionsCount,parentAreaId, deleteCondition }: ConditionsProps) {
 
     const [parentConditionId, setParentConditionId] = useState('');
 
@@ -25,7 +25,8 @@ export function Conditions({ focusedArea, conditionsCount, selectedVar, deleteCo
                 </div>
                 <div className={styles.condition_textarea}>
                     <TemplateTextArea focusedArea={focusedArea} conditionsCount ={conditionsCount} 
-                    selectedVar={selectedVar} conditionType={ConditionType.if} giveAreaId={(id) => {setParentConditionId(id)}}/>
+                     conditionType={ConditionType.if} 
+                    parentAreaId={parentAreaId} giveAreaId={(id) => {setParentConditionId(id)}}/>
                 </div>
             </div>
             <div className={styles.condition}>
@@ -35,7 +36,8 @@ export function Conditions({ focusedArea, conditionsCount, selectedVar, deleteCo
 
                 <div className={styles.condition_textarea}>
                     <TemplateTextArea focusedArea={focusedArea} conditionsCount ={conditionsCount} 
-                    selectedVar={selectedVar} conditionType={ConditionType.then} parentConditionId={parentConditionId}/>
+                     conditionType={ConditionType.then} 
+                    parentAreaId={parentAreaId} parentConditionId={parentConditionId}/>
                 </div>
             </div>
             <div className={styles.condition}>
@@ -45,7 +47,8 @@ export function Conditions({ focusedArea, conditionsCount, selectedVar, deleteCo
 
                 <div className={styles.condition_textarea}>
                     <TemplateTextArea focusedArea={focusedArea} conditionsCount ={conditionsCount} 
-                    selectedVar={selectedVar} conditionType={ConditionType.else} parentConditionId={parentConditionId}/>
+                     conditionType={ConditionType.else} 
+                    parentAreaId={parentAreaId} parentConditionId={parentConditionId}/>
                 </div>
             </div>
 

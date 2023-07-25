@@ -17,6 +17,7 @@ export interface ITextAreaTemplate {
   secondAreaId: string | null;
   conditionType: ConditionType | null;
   conditionVar: string | null;
+  parentAreaId: string | null | undefined;
   parentConditionId: string | null | undefined;
 }
 
