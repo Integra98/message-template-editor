@@ -5,7 +5,7 @@ interface ITemplateContext {
     selectedVars: IVariable[];
     textAreaTemp: string | null;
     generatedMessage: string;
-    insertedVariable: {textArea: HTMLTextAreaElement|null, variable: IVariable|null}|undefined;
+    insertedVariable: { textArea: HTMLTextAreaElement | null, variable: IVariable | null } | undefined;
     varSelected: (textArea: HTMLTextAreaElement, variable: IVariable) => void;
     areaAdded: (areaTemplate: ITextAreaTemplate) => void;
     areaDeleted: (parentAreaIds: string) => void;
@@ -14,35 +14,36 @@ interface ITemplateContext {
     setGeneratedMessage: (message: string) => void;
 }
 
-export const TemplateContext = createContext<ITemplateContext>({ 
-    selectedVars: [], 
-    textAreaTemp: null, 
-    insertedVariable: {textArea: null, variable: null},
+export const TemplateContext = createContext<ITemplateContext>({
+    selectedVars: [],
+    textAreaTemp: null,
+    insertedVariable: { textArea: null, variable: null },
     generatedMessage: '',
-    varSelected: () => {}, 
-    areaAdded: () => {},
-    areaDeleted: () => {},
-    areaChanged: () => {},
-    parentAreaChanged: () => {},
-    setGeneratedMessage: () => {}})
+    varSelected: () => { },
+    areaAdded: () => { },
+    areaDeleted: () => { },
+    areaChanged: () => { },
+    parentAreaChanged: () => { },
+    setGeneratedMessage: () => { }
+})
 
 export const TemplateProvider = ({ children }: { children: React.ReactNode }) => {
 
     const [existedAreas, setExistedAreas] = useState<ITextAreaTemplate[]>([]);
     const [jsonTemplate, setJsonTemplate] = useState('');
     const [selectedVariables, setSelectedVariables] = useState<IVariable[]>([]);
-    const [insertedVariable, setInsertedVariable] = useState<{textArea: HTMLTextAreaElement|null, variable: IVariable|null}>();
+    const [insertedVariable, setInsertedVariable] = useState<{ textArea: HTMLTextAreaElement | null, variable: IVariable | null }>();
     const [message, setMessage] = useState('');
 
-    
+
     //Добавление Variables
     function addselectedVariable(textArea: HTMLTextAreaElement, variable: IVariable) {
 
         // all CustomTextArea listen insertedVariable 
-        setInsertedVariable({textArea: textArea, variable: variable})
+        setInsertedVariable({ textArea: textArea, variable: variable })
 
         const selectedVar = variables.find(v => v.name === variable.name);
-        if(selectedVar){
+        if (selectedVar) {
             //Set variables for Preview
             const newVars = selectedVariables;
             newVars.push(selectedVar)
@@ -50,9 +51,9 @@ export const TemplateProvider = ({ children }: { children: React.ReactNode }) =>
         }
 
         const areaObjIndx = existedAreas.findIndex(ar => ar.textAreaId === textArea.id)
-        if(areaObjIndx > -1){
+        if (areaObjIndx > -1) {
             //Обновление conditionVar for TextArea после которого добавили condition
-            if(existedAreas[areaObjIndx].conditionType){
+            if (existedAreas[areaObjIndx].conditionType) {
                 existedAreas[areaObjIndx].conditionVar = selectedVar?.name ? selectedVar?.name : null
                 setJsonTemplate(JSON.stringify(existedAreas));
             }
@@ -62,7 +63,7 @@ export const TemplateProvider = ({ children }: { children: React.ReactNode }) =>
 
     function addTextArea(newArea: ITextAreaTemplate) {
         const findedAreaIndx = existedAreas.findIndex(area => area.textAreaId === newArea.textAreaId);
-        if(findedAreaIndx === -1){
+        if (findedAreaIndx === -1) {
             const newAreas = existedAreas;
             newAreas.push(newArea)
             setExistedAreas(newAreas)
@@ -72,22 +73,36 @@ export const TemplateProvider = ({ children }: { children: React.ReactNode }) =>
         setJsonTemplate(JSON.stringify(existedAreas));
     }
 
-    function deleteTextArea(parentAreaId: string){
-        const findedArea = existedAreas.filter(area => area.parentAreaId === parentAreaId);
+    function deleteTextArea(parentAreaId: string) {
+        const findedArea = existedAreas.filter(area => area.parentAreaId === parentAreaId && area.conditionType);
+        const secondAreas = existedAreas.filter(area => area.isSecondArea === true && area.firstAreaId === parentAreaId);
+        secondAreas.forEach(second => { findedArea.push(second) })
+
         findedArea.forEach(area => {
             const findedAreaIndx = existedAreas.findIndex(ar => ar.textAreaId === area.textAreaId);
-            existedAreas.splice(findedAreaIndx,1)
+            existedAreas.splice(findedAreaIndx, 1)
             deleteTextArea(area.textAreaId);
+            deleteVariables(area.content)
         })
-        console.log('deleteTextArea', existedAreas);
 
+    }
+
+    function deleteVariables(content: string) {
+        variables.forEach(variable => {
+            if (content.includes(`{${variable.name}}`)) {
+                const findedVarIndx = selectedVariables.findIndex(v => v.name === variable.name)
+                const newVars = selectedVariables;
+                newVars.splice(findedVarIndx, 1)
+                setSelectedVariables(newVars)
+            }
+        })
     }
 
 
     //Handle change TextArea content
-    function textAreaValueChanged(area: HTMLTextAreaElement){
+    function textAreaValueChanged(area: HTMLTextAreaElement) {
         const areaObjIndx = existedAreas.findIndex(ar => ar.textAreaId === area.id)
-        if(areaObjIndx > -1){
+        if (areaObjIndx > -1) {
             existedAreas[areaObjIndx].content = area.value
             setJsonTemplate(JSON.stringify(existedAreas));
         }
@@ -95,13 +110,13 @@ export const TemplateProvider = ({ children }: { children: React.ReactNode }) =>
 
 
     //Обновление parentConditionId и parentAreaId при добавлении Condition
-    function parentAreaChanged(areaID: string, parentAreaID: string, forCondition: boolean){
+    function parentAreaChanged(areaID: string, parentAreaID: string, forCondition: boolean) {
         const areaObjIndx = existedAreas.findIndex(ar => ar.textAreaId === areaID)
-        if(areaObjIndx > -1){
-            if(forCondition){
+        if (areaObjIndx > -1) {
+            if (forCondition) {
                 existedAreas[areaObjIndx].parentConditionId = parentAreaID
                 setJsonTemplate(JSON.stringify(existedAreas));
-            }else {
+            } else {
                 existedAreas[areaObjIndx].parentAreaId = parentAreaID
                 setJsonTemplate(JSON.stringify(existedAreas));
             }

@@ -57,7 +57,7 @@ export function TemplateTextArea({ focusedArea, conditionsCount, conditionType, 
             isSecondArea: isSecond,
             firstAreaId: isSecond ? textAreaId : null,
             secondAreaId: isSecond ? null : secondTextAreaId,
-            conditionType: conditionType,
+            conditionType: isSecond ? null : conditionType,
             conditionVar: null,
             parentAreaId: parentAreaId,
             parentConditionId: parentConditionId
