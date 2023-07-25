@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import styles from '../App.module.css';
 import { TemplateTextArea } from './TemplateTextArea';
 import { Preview } from './Preview';
@@ -8,14 +8,21 @@ import { TemplateContext } from '../TemplateContext';
 
 interface TemplateEditorProps {
     arrVarNames: IVariable[];
-    callbackSave: () => void;
+    template: string;
+    callbackSave: (template: string) => void;
     close: () => void;
 }
 
-export function TemplateEditor({ arrVarNames, callbackSave, close }: TemplateEditorProps) {
+export function TemplateEditor({ arrVarNames, template, callbackSave, close }: TemplateEditorProps) {
 
-    const { selectedVars, textAreaTemp, varSelected} = useContext(TemplateContext)
+    const { selectedVars, textAreaTemp, setGeneratedMessage, varSelected} = useContext(TemplateContext)
     const [focusElement, setFocusElement] = useState<HTMLTextAreaElement>()
+    const [showPreview, setShowPreview] = useState(false)
+
+    useEffect(() => {
+        setGeneratedMessage(JSON.stringify(template))
+      }, [template]);
+      
 
     function setScreenSize() {
         const height = document.documentElement.scrollHeight
@@ -24,7 +31,6 @@ export function TemplateEditor({ arrVarNames, callbackSave, close }: TemplateEdi
             widgets.setAttribute('style', `height:${height}px;`)
         }
     }
-
 
     const handleFocusChange = (event: React.SyntheticEvent) => {
         let target = event.target as HTMLElement;
@@ -45,7 +51,6 @@ export function TemplateEditor({ arrVarNames, callbackSave, close }: TemplateEdi
         }
     }
 
-
     function insertVal(variable: IVariable) {
         if(focusElement){
             varSelected(focusElement, variable)
@@ -53,7 +58,13 @@ export function TemplateEditor({ arrVarNames, callbackSave, close }: TemplateEdi
         }
     }
 
-    const [showPreview, setShowPreview] = useState(false)
+    function saveTemplate(){
+        if(textAreaTemp){
+            callbackSave(textAreaTemp)
+            close()
+        }
+        // если нужно сохранить сгенерированный вариант сообщения то передать в функцию нужно generatedMessage вместо textAreaTemp
+    }
 
     return (
         <div id='widgets' className={styles.widgets}>
@@ -71,7 +82,7 @@ export function TemplateEditor({ arrVarNames, callbackSave, close }: TemplateEdi
 
                 <div className={styles.widget_footer}>
                     <button className={styles.btn} onClick={() => setShowPreview(true)}> Preview</button>
-                    <button className={styles.btn}>Save</button>
+                    <button className={styles.btn} onClick={() => saveTemplate()}>Save</button>
                     <button className={styles.btn} onClick={close}>Close</button>
                 </div>
             </div>

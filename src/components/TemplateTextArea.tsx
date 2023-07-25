@@ -22,7 +22,7 @@ export function TemplateTextArea({ focusedArea, conditionsCount, conditionType, 
     let textAreaRef: RefObject<HTMLTextAreaElement> | null = null;
     let secondTextAreaRef: RefObject<HTMLTextAreaElement> | null = null;
 
-    const {areaAdded, parentAreaChanged } = useContext(TemplateContext)
+    const {areaAdded, areaDeleted, parentAreaChanged } = useContext(TemplateContext)
 
     // set parentConditionId for TextArea(THEN,ELSE)
     useEffect(() => {
@@ -88,6 +88,9 @@ export function TemplateTextArea({ focusedArea, conditionsCount, conditionType, 
         const textAreaValue = (firstEl?.textContent ? firstEl?.textContent : '') + (secondEl?.textContent ? secondEl?.textContent : '')
         setTextTemplate(textAreaValue)
         setSecondArea(false)
+        if(textAreaId){
+            areaDeleted(textAreaId)
+        }
     }
 
 

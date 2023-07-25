@@ -4,19 +4,27 @@ import { ITextAreaTemplate, IVariable, variables } from "./models";
 interface ITemplateContext {
     selectedVars: IVariable[];
     textAreaTemp: string | null;
+    generatedMessage: string;
     insertedVariable: {textArea: HTMLTextAreaElement|null, variable: IVariable|null}|undefined;
     varSelected: (textArea: HTMLTextAreaElement, variable: IVariable) => void;
     areaAdded: (areaTemplate: ITextAreaTemplate) => void;
+    areaDeleted: (parentAreaIds: string) => void;
     areaChanged: (area: HTMLTextAreaElement) => void;
     parentAreaChanged: (textAreaId: string, parentAreaId: string, forCondition: boolean) => void;
+    setGeneratedMessage: (message: string) => void;
 }
 
-export const TemplateContext = createContext<ITemplateContext>({ selectedVars: [], textAreaTemp: null, 
+export const TemplateContext = createContext<ITemplateContext>({ 
+    selectedVars: [], 
+    textAreaTemp: null, 
     insertedVariable: {textArea: null, variable: null},
-    varSelected: () => { }, 
-    areaAdded: () => { },
-    areaChanged: () => { },
-    parentAreaChanged: () => {}})
+    generatedMessage: '',
+    varSelected: () => {}, 
+    areaAdded: () => {},
+    areaDeleted: () => {},
+    areaChanged: () => {},
+    parentAreaChanged: () => {},
+    setGeneratedMessage: () => {}})
 
 export const TemplateProvider = ({ children }: { children: React.ReactNode }) => {
 
@@ -24,6 +32,8 @@ export const TemplateProvider = ({ children }: { children: React.ReactNode }) =>
     const [jsonTemplate, setJsonTemplate] = useState('');
     const [selectedVariables, setSelectedVariables] = useState<IVariable[]>([]);
     const [insertedVariable, setInsertedVariable] = useState<{textArea: HTMLTextAreaElement|null, variable: IVariable|null}>();
+    const [message, setMessage] = useState('');
+
     
     //Добавление Variables
     function addselectedVariable(textArea: HTMLTextAreaElement, variable: IVariable) {
@@ -37,7 +47,6 @@ export const TemplateProvider = ({ children }: { children: React.ReactNode }) =>
             const newVars = selectedVariables;
             newVars.push(selectedVar)
             setSelectedVariables(newVars)
-            console.log('Context selectedVariables', selectedVariables);
         }
 
         const areaObjIndx = existedAreas.findIndex(ar => ar.textAreaId === textArea.id)
@@ -62,6 +71,18 @@ export const TemplateProvider = ({ children }: { children: React.ReactNode }) =>
         }
         setJsonTemplate(JSON.stringify(existedAreas));
     }
+
+    function deleteTextArea(parentAreaId: string){
+        const findedArea = existedAreas.filter(area => area.parentAreaId === parentAreaId);
+        findedArea.forEach(area => {
+            const findedAreaIndx = existedAreas.findIndex(ar => ar.textAreaId === area.textAreaId);
+            existedAreas.splice(findedAreaIndx,1)
+            deleteTextArea(area.textAreaId);
+        })
+        console.log('deleteTextArea', existedAreas);
+
+    }
+
 
     //Handle change TextArea content
     function textAreaValueChanged(area: HTMLTextAreaElement){
@@ -93,10 +114,13 @@ export const TemplateProvider = ({ children }: { children: React.ReactNode }) =>
                 selectedVars: selectedVariables,
                 textAreaTemp: jsonTemplate,
                 insertedVariable: insertedVariable,
+                generatedMessage: message,
                 varSelected: (textArea, variable) => addselectedVariable(textArea, variable),
                 areaAdded: (temp) => addTextArea(temp),
+                areaDeleted: (id) => deleteTextArea(id),
                 areaChanged: (ref) => textAreaValueChanged(ref),
                 parentAreaChanged: (id, parentId, forCondition) => parentAreaChanged(id, parentId, forCondition),
+                setGeneratedMessage: (message) => setMessage(message)
             }}>
 
             {children}

@@ -18,7 +18,6 @@ export function CustomTextArea({ template, giveRef }: CustomTextAreaProps) {
 
     useAutosizeTextArea(textAreaRef.current, textAreaValue);
 
-
     const handleChange = (evt: React.ChangeEvent<HTMLTextAreaElement>) => {
         let val = evt.target?.value;
         if (textAreaValue.length > evt.target?.value.length) {
