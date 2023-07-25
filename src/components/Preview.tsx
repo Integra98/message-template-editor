@@ -153,7 +153,7 @@ export function Preview({ arrVarNames, template, close }: PreviewProps) {
                 }
             }
 
-            const secondArea = templateDataset.find(area => area.isSecondArea && area.firstAreaId == parentArea?.textAreaId);
+            const secondArea = templateDataset.find(area => area.isSecondArea && area.firstAreaId === parentArea?.textAreaId);
             contentFromCondition = contentFromCondition + (secondArea?.content ? secondArea?.content + '<br/>' : '')
 
         }
