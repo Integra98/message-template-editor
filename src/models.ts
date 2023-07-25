@@ -15,10 +15,10 @@ export interface ITextAreaTemplate {
   isSecondArea: boolean;
   firstAreaId: string | null;
   secondAreaId: string | null;
-  conditionType: ConditionType | null;
-  conditionVar: string | null;
-  parentAreaId: string | null | undefined;
-  parentConditionId: string | null | undefined;
+  conditionType: ConditionType | null;          //Значение (IF/THEN/ELSE) для textArea, null = у поля нет условия
+  conditionVar: string | null;                  //Variables for (IF/THEN/ELSE)
+  parentAreaId: string | null | undefined;      //ID textArea под которым добавлено условие
+  parentConditionId: string | null | undefined; //ID textArea with IF для THEN/ELSE
 }
 
 export enum ConditionType {

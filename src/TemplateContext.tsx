@@ -25,7 +25,7 @@ export const TemplateProvider = ({ children }: { children: React.ReactNode }) =>
     const [selectedVariables, setSelectedVariables] = useState<IVariable[]>([]);
     const [insertedVariable, setInsertedVariable] = useState<{textArea: HTMLTextAreaElement|null, variable: IVariable|null}>();
     
-
+    //Добавление Variables
     function addselectedVariable(textArea: HTMLTextAreaElement, variable: IVariable) {
 
         // all CustomTextArea listen insertedVariable 
@@ -43,8 +43,10 @@ export const TemplateProvider = ({ children }: { children: React.ReactNode }) =>
         const areaObjIndx = existedAreas.findIndex(ar => ar.textAreaId === textArea.id)
         if(areaObjIndx > -1){
             //Обновление conditionVar for TextArea после которого добавили condition
-            existedAreas[areaObjIndx].conditionVar = selectedVar?.name ? selectedVar?.name : null
-            setJsonTemplate(JSON.stringify(existedAreas));
+            if(existedAreas[areaObjIndx].conditionType){
+                existedAreas[areaObjIndx].conditionVar = selectedVar?.name ? selectedVar?.name : null
+                setJsonTemplate(JSON.stringify(existedAreas));
+            }
         }
 
     }
@@ -61,6 +63,7 @@ export const TemplateProvider = ({ children }: { children: React.ReactNode }) =>
         setJsonTemplate(JSON.stringify(existedAreas));
     }
 
+    //Handle change TextArea content
     function textAreaValueChanged(area: HTMLTextAreaElement){
         const areaObjIndx = existedAreas.findIndex(ar => ar.textAreaId === area.id)
         if(areaObjIndx > -1){
@@ -69,6 +72,8 @@ export const TemplateProvider = ({ children }: { children: React.ReactNode }) =>
         }
     }
 
+
+    //Обновление parentConditionId и parentAreaId при добавлении Condition
     function parentAreaChanged(areaID: string, parentAreaID: string, forCondition: boolean){
         const areaObjIndx = existedAreas.findIndex(ar => ar.textAreaId === areaID)
         if(areaObjIndx > -1){
@@ -79,11 +84,8 @@ export const TemplateProvider = ({ children }: { children: React.ReactNode }) =>
                 existedAreas[areaObjIndx].parentAreaId = parentAreaID
                 setJsonTemplate(JSON.stringify(existedAreas));
             }
-           
         }
     }
-
-
 
     return (
         <TemplateContext.Provider

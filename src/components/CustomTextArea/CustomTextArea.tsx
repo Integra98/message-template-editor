@@ -28,6 +28,8 @@ export function CustomTextArea({ template, giveRef }: CustomTextAreaProps) {
         areaChanged(evt.target)
     };
 
+
+    //При удалении 1 символа Variable, удаляется весь Variable
     function removeWholeVariable(value: string): string {
         const textAreaWords = value.split(' ');
         let lastWord = textAreaWords[textAreaWords.length - 1].replace('{', '')
@@ -87,6 +89,10 @@ export function CustomTextArea({ template, giveRef }: CustomTextAreaProps) {
         }
 
         setTextAreaValue(newValue)
+        if(textAreaRef.current){
+            textAreaRef.current.value = newValue
+            areaChanged(textAreaRef.current)
+        }
 
     }
 

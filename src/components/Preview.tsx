@@ -1,13 +1,14 @@
-import React, { RefObject, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import styles from '../App.module.css';
 import { ConditionType, ITextAreaTemplate, IVariable, variables } from '../models';
-import { Conditions } from './Conditions';
 
 interface PreviewProps {
     arrVarNames: IVariable[];
     template: any;
     close: () => void
 }
+
+const templateDataset: ITextAreaTemplate[] = [];
 
 export function Preview({ arrVarNames, template, close }: PreviewProps) {
 
@@ -18,69 +19,91 @@ export function Preview({ arrVarNames, template, close }: PreviewProps) {
     //Hanle change of variable's input
     const handleChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
         let value = evt.target.value;
-        var varNode = messageTextRef.current?.getElementsByClassName(evt.target.id)
-        if (varNode) {
-            varContent.set(evt.target.id, value)
-            for (let i = 0; i < varNode.length; i++) {
-                const node = varNode.item(i);
-                console.log('i node', node);
+        varContent.set(evt.target.id, value)
+        if (messageTextRef.current) {
 
-                if (node) {
-                    node.textContent = value;
+            //Пересобираем текст сообщиения при изменении Variables
+            if (templateDataset) {
+                messageTextRef.current.innerHTML = generateMessage(templateDataset)
+            }
+
+            //замена variables на значения из inputs
+            var varNode = messageTextRef.current?.getElementsByClassName(evt.target.id)
+            if (varNode) {
+                for (let i = 0; i < varNode.length; i++) {
+                    const node = varNode.item(i);
+
+                    if (node) {
+                        replaceVarContent(evt.target.id, node.textContent, value)
+                        node.textContent = value;
+                    }
                 }
             }
         }
-
     };
 
     //Convert variable:string to variable:HTML Element
     function replaceVariables(content: string): string {
-        var newContent = '';
         variables.forEach(variable => {
             if (content.includes(`{${variable.name}}`)) {
-                newContent = content.replace(`{${variable.name}}`, `<span class=${variable.name}>{${variable.name}}</span>`)
-                console.log('newContent:', newContent);
+                content = content.replace(`{${variable.name}}`, `<span class=${variable.name}>{${variable.name}}</span>`)
             }
         });
-        return newContent;
+        return content;
     }
 
-    function generateMessage(): string {
-        const templateData: ITextAreaTemplate[] = JSON.parse(template);
+    function replaceVarContent(varId: string, oldValue: string|null, newValue: string){
+        const dataForUpdate = templateDataset.filter(data => data.content.includes(`class=${varId}`));
+        dataForUpdate.forEach(data => {
+            const newContent = data.content.replace(
+                `<span class=${varId}>${oldValue}</span>`, 
+                `<span class=${varId}>${newValue}</span>`)
+
+            const indx = templateDataset.findIndex(d => d === data)
+            templateDataset[indx].content = newContent
+        })
+    }
+
+
+    function generateMessage(templateData: ITextAreaTemplate[]): string {
         var templateContent = '';
-
-        console.log('arrVarNames', arrVarNames);
-        console.log('templateData', templateData);
-
         const firstArea = templateData.find(area => !area.conditionType && !area.isSecondArea);
         const secondArea = templateData.find(area => !area.conditionType && area.isSecondArea);
-        if (firstArea) {
-            templateContent += firstArea?.content + "<br/>" 
-            const conditionArea = checkConditionAvailable(templateData, firstArea?.textAreaId)
-            // if (conditionArea) {
-            //     //Если есть Condition то генерируем тект для него
-            //     templateContent += generateMessageWithCondition(templateData, firstArea)
-            // } 
-            templateContent +=  (secondArea?.content ? secondArea?.content : '')
-            
-        }
 
-        // console.log('templateContent', templateContent);
-        return replaceVariables(templateContent);
+        if (firstArea) {
+            templateContent = templateContent + firstArea?.content + "<br/>"
+            const conditionArea = checkConditionAvailable(templateData, firstArea?.textAreaId)
+            if (conditionArea) {
+                //Если есть Condition то генерируем текcт для него
+                templateContent = templateContent + generateMessageWithCondition(templateData, firstArea)
+            } else {
+                templateContent = templateContent + (secondArea?.content ? secondArea?.content : '')
+            }
+
+        }
+        return templateContent
     }
 
     function generateMessageWithCondition(templateData: ITextAreaTemplate[], parentArea: ITextAreaTemplate): string {
         const conditionAreas = templateData.filter(area => area.conditionType && area.parentAreaId === parentArea?.textAreaId);
-        console.log('PREVIEW condition', conditionAreas);
         const conditionIf = conditionAreas.find(c => c.conditionType === ConditionType.if)
         var contentFromCondition = '';
         if (conditionIf) {
+            //Проверка наличия условия для IF area
+             const conditionforThisArea = checkConditionAvailable(templateData, conditionIf?.textAreaId)
+             if (conditionforThisArea) {
+                 contentFromCondition += generateMessageWithCondition(templateData, conditionIf)
+                 console.log('conditionforThisArea', contentFromCondition);
+             }
+
             const condition = conditionIf.conditionVar ? varContent.get(conditionIf.conditionVar) : null
+
             //Проверка наличия значения Variable
             if (condition) {
                 const thenPart = conditionAreas.find(c => c.conditionType === ConditionType.then)
                 if (thenPart) {
-                    contentFromCondition += thenPart?.content + "<br/>"
+                    contentFromCondition = contentFromCondition + thenPart?.content + "<br/>"
+                    console.log('thenPart', contentFromCondition);
 
                     //Проверка наличия условия для THEN area
                     const conditionforThisArea = checkConditionAvailable(templateData, thenPart?.textAreaId)
@@ -92,7 +115,8 @@ export function Preview({ arrVarNames, template, close }: PreviewProps) {
             } else {
                 const elsePart = conditionAreas.find(c => c.conditionType === ConditionType.else)
                 if (elsePart) {
-                    contentFromCondition += elsePart?.content + "<br/>"
+                    contentFromCondition = contentFromCondition + elsePart?.content + "<br/>"
+                    console.log('elsePart', contentFromCondition);
 
                     //Проверка наличия условия для ELSE area
                     const conditionforThisArea = checkConditionAvailable(templateData, elsePart?.textAreaId)
@@ -101,39 +125,48 @@ export function Preview({ arrVarNames, template, close }: PreviewProps) {
                     }
                 }
             }
-            //Проверка наличия условия для IF area
-            const conditionforThisArea = checkConditionAvailable(templateData, conditionIf?.textAreaId)
-            if (conditionforThisArea) {
-                contentFromCondition += generateMessageWithCondition(templateData, conditionIf)
-            }
+
+            const secondArea = templateData.find(area => area.isSecondArea && area.firstAreaId == parentArea?.textAreaId);
+            contentFromCondition = contentFromCondition + secondArea?.content + "<br/>"
+
         }
 
-        return replaceVariables(contentFromCondition)
+        return contentFromCondition
     }
 
     function checkConditionAvailable(templateData: ITextAreaTemplate[], parentAreaId: string): ITextAreaTemplate | undefined {
         return templateData.find(area => area.conditionType && area.parentAreaId === parentAreaId);
     }
 
+    const firstRenderRef = useRef(true);
     useEffect(() => {
-        //Получение  template и arrVarNames из родительского компонента
-        if (template && messageTextRef.current) {
-            messageTextRef.current.innerHTML = generateMessage()
-        }
+        const firstRender = firstRenderRef.current;
 
-        const newVars: IVariable[] = [];
-        if (arrVarNames.length > 0) {
-            arrVarNames.forEach((variable) => {
-                if (!newVars.includes(variable)) {
-                    newVars.push(variable);
-                    varContent.set(variable.name, '')
+        if (firstRender) {
+            firstRenderRef.current = false;
+
+            //Получение  template и arrVarNames(без дубликатов) из родительского компонента при 1 рендере
+            if (template && messageTextRef.current) {
+                JSON.parse(template).map((el:ITextAreaTemplate) => templateDataset.push(el))
+                if (templateDataset) {
+                    templateDataset?.forEach(data => data.content = replaceVariables(data.content))
+                    messageTextRef.current.innerHTML = generateMessage(templateDataset)
                 }
-            });
-            setVarArray(newVars)
+            }
+
+            const newVars: IVariable[] = [];
+            if (arrVarNames.length > 0) {
+                arrVarNames.forEach((variable) => {
+                    if (!newVars.includes(variable)) {
+                        newVars.push(variable);
+                        varContent.set(variable.name, '')
+                    }
+                });
+                setVarArray(newVars);
+            }
         }
-
-
     }, [arrVarNames, template])
+
 
     return (
         <div className={styles.preview_background}>
